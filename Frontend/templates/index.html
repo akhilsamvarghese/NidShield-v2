@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-sdcale=1.0">
+    <title>NIDS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Network Intrusion Detection System</h1>
+        
+        <!-- Alert Message -->
+        {% if alert %}
+        <div class="alert alert-{{ alert.type }}">
+            {{ alert.message }}
+        </div>
+        {% endif %}
+        
+        <!-- Form for uploading the file -->
+        <form action='/' method="post" enctype="multipart/form-data" id="uploadForm">
+            <input type="file" name="DFfile" accept=".json, .df" id="fileInput">
+            <br>
+            <input class="btn-submit" type="submit" value="Predict" id="predictBtn">
+            <div id="loading">Loading...</div>
+            <div id="error"></div>
+        </form>
+
+        <!-- Add this alert div -->
+        <div id="uploadAlert" class="alert alert-warning" style="display: none;">
+            DataFrame not uploaded
+        </div>
+
+        <!-- Enhanced Dashboard -->
+        {% if prediction %}
+        <div class="dashboard">
+            <h2>Analysis Results</h2>
+            
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-title">Total Traffic Analyzed</div>
+                    <div class="stat-value">{{ prediction|length }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Detection Status</div>
+                    <div class="stat-value" style="color: {{ 'red' if alert and alert.type == 'danger' else 'green' }}">
+                        {{ 'Threats Detected' if alert and alert.type == 'danger' else 'Normal' }}
+                    </div>
+                </div>
+            </div>
+
+            {% if alert and alert.type == 'danger' %}
+            <div class="attack-list">
+                <h3>Traffic Classification Analysis</h3>
+                
+                <div class="classification-summary">
+                    <div class="summary-card">
+                        <div class="summary-title">Normal Traffic</div>
+                        <div class="summary-value">{{ stats.normal_count }}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title">Malicious Traffic</div>
+                        <div class="summary-value">{{ stats.attack_count }}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-title">Attack Rate</div>
+                        <div class="summary-value">{{ stats.attack_percentage }}%</div>
+                    </div>
+                </div>
+
+                <div class="attack-types-container">
+                    {% for type, count in stats.attack_types.items() %}
+                    <div class="attack-item {% if type != 'normal' %}attack-item-danger{% endif %}">
+                        <div class="attack-info">
+                            <span class="attack-type">{{ type|title }}</span>
+                            <span class="attack-percentage">
+                                {{ ((count / stats.total_traffic) * 100)|round(1) }}%
+                            </span>
+                        </div>
+                        <div class="attack-details">
+                            <div class="attack-count">{{ count }} instances detected</div>
+                        </div>
+                            <!-- Remove the progress bar div
+                            <div class="attack-bar">
+                                <div class="attack-bar-fill" style="width: {{ (count / stats.total_traffic) * 100 }}%"></div>
+                            </div>
+                            -->
+                        </div>
+                        <div class="attack-description">
+                            {% if type == 'dos' %}
+                            Denial of Service attack attempting to overwhelm system resources
+                            {% elif type == 'probe' %}
+                            Surveillance and probing attempt to gather system information
+                            {% elif type == 'r2l' %}
+                            Remote to Local attack attempting unauthorized access
+                            {% elif type == 'u2r' %}
+                            User to Root attack attempting privilege escalation
+                            {% elif type == 'normal' %}
+                            Regular network traffic with no malicious intent detected
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        <!-- Analysis History -->
+        {% if history %}
+        <div class="dashboard">
+            <div class="history-dropdown">
+                <div class="history-toggle">
+                    Analysis History <span>({{ history|length }} entries)</span>
+                </div>
+                <div class="history-content">
+                    {% for entry in history|reverse %}
+                    <div class="history-card {% if entry.status == 'attack_detected' %}history-alert{% endif %}">
+                        <div class="history-header">
+                            <span class="history-date">{{ entry.timestamp }}</span>
+                            <span class="history-status {{ entry.status }}">
+                                {{ "⚠️ Attack Detected" if entry.status == 'attack_detected' else "✅ Normal" }}
+                            </span>
+                        </div>
+                        <div class="history-details">
+                            <p>File: {{ entry.filename }}</p>
+                            <p>Total Traffic: {{ entry.total_traffic }}</p>
+                            <p>Attack Rate: {{ entry.attack_percentage }}%</p>
+                            {% if entry.status == 'attack_detected' %}
+                            <div class="history-attacks">
+                                {% for type, count in entry.attack_types.items() %}
+                                {% if type != 'normal' %}
+                                <span class="history-attack-type">{{ type }}: {{ count }}</span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="footer">
+        <p>© 2025, NIDSHIELD | Secure Network Monitoring</p>
+    </div>
+
+    <script>
+        // Show loading state while file is being uploaded and model is making predictions
+        document.querySelector('form').addEventListener('submit', function() {
+            const loading = document.getElementById('loading');
+            loading.classList.add('loading-active');
+            loading.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        });
+
+        // Show error message if file upload fails
+        document.querySelector('form').addEventListener('reset', function() {
+            const loading = document.getElementById('loading');
+            loading.classList.remove('loading-active');
+            loading.style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        });
+
+        // Ensure loading is hidden on page load
+        window.addEventListener('load', function() {
+            document.getElementById('loading').style.display = 'none';
+        });
+
+        // Add dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const historyToggle = document.querySelector('.history-toggle');
+            const historyContent = document.querySelector('.history-content');
+            
+            if (historyToggle && historyContent) {
+                historyToggle.addEventListener('click', function() {
+                    historyContent.classList.toggle('show');
+                    historyToggle.classList.toggle('active');
+                });
+            }
+        });
+
+        // Add form validation
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('fileInput');
+            const uploadAlert = document.getElementById('uploadAlert');
+            const loading = document.getElementById('loading');
+        
+            if (!fileInput.files.length) {
+                e.preventDefault(); // Prevent form submission
+                uploadAlert.style.display = 'block';
+                setTimeout(() => {
+                    uploadAlert.style.display = 'none';
+                }, 3000); // Hide alert after 3 seconds
+            } else {
+                uploadAlert.style.display = 'none';
+                loading.classList.add('loading-active');
+                loading.style.display = 'block';
+            }
+        });
+
+        // Hide alert on file selection
+        document.getElementById('fileInput').addEventListener('change', function() {
+            document.getElementById('uploadAlert').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
