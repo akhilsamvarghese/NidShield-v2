@@ -4,7 +4,6 @@
 NIDShield is a Network Intrusion Detection System (NIDS) leveraging machine learning techniques. This system enhances traditional intrusion detection by dynamically learning from network traffic patterns. By integrating machine learning algorithms, NIDShield can adapt and identify both known and previously unknown threats.
 
 ## Features
-- Real-time network traffic analysis
 - Machine learning-based threat detection
 - Interactive web interface for monitoring and analysis
 - Classification of connection attempts as normal or specific attack types
@@ -143,5 +142,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 Your Name - [akhilsam.v@gmail.com](mailto:akhilsam.v@gmail.com)
-Project Link: [https://github.com/akhilsamvarghese/NIDShield](https://github.com/akhilsamvarghese/NIDShield)
+Project Link: [https://github.com/akhilsamvarghese/NIDShield](https://github.com/akhilsamvarghese/NidShield-v2)
 
