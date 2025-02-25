@@ -1,5 +1,5 @@
 # NIDShield
-
+![Alt Text](https://drive.google.com/file/d/1eMjBlpdvThWIqrM2syGkQcYk94DqzAHl/view?usp=share_link)
 ## Overview
 NIDShield is a Network Intrusion Detection System (NIDS) leveraging machine learning techniques. This system enhances traditional intrusion detection by dynamically learning from network traffic patterns. By integrating machine learning algorithms, NIDShield can adapt and identify both known and previously unknown threats.
 
