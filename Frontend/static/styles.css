@@ -238,6 +238,8 @@ input[type="file"]:hover {
     font-size: 14px;
     font-weight: 500;
 }
+
+#footer {
     position: relative;
     margin-top: 0;
     width: 100%;
